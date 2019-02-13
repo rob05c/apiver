@@ -76,3 +76,21 @@ func (d *JSONDecoder) Decode(realObj interface{}) error {
 	}
 	return nil
 }
+
+type JSONEncoder struct {
+	Version float64
+	E       *json.Encoder
+}
+
+func (j EncodingJSONDropIn) NewEncoder(w io.Writer) *JSONEncoder {
+	return &JSONEncoder{Version: j.Version, E: json.NewEncoder(w)}
+}
+func (e *JSONEncoder) SetEscapeHTML(on bool)           { e.E.SetEscapeHTML(on) }
+func (e *JSONEncoder) SetIndent(prefix, indent string) { e.E.SetIndent(prefix, indent) }
+func (e *JSONEncoder) Encode(v interface{}) error {
+	obj, err := BuildMarshalObj(v, e.Version)
+	if err != nil {
+		return err
+	}
+	return e.E.Encode(obj)
+}

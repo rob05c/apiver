@@ -3,6 +3,7 @@ package apiver
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -312,5 +313,98 @@ func TestNewJSONDecoderBadInputMissingRequiredField(t *testing.T) {
 
 	if err := decoder.Decode(&obj); err == nil {
 		t.Fatalf("json.Decoder error expected: 'missing required field', actual: %+v", err)
+	}
+}
+
+func TestNewJSONEncoder(t *testing.T) {
+	type Obj struct {
+		Foo int  `json:"foo" api:"1.1,str"`
+		A   *int `json:"a" api:"1.4,str"`
+	}
+
+	json := NewJSON(1.3)
+
+	obj := Obj{Foo: 42}
+	expected := `{"foo":42}`
+
+	buf := bytes.Buffer{}
+	enc := json.NewEncoder(&buf)
+	if err := enc.Encode(&obj); err != nil {
+		t.Fatalf("json.Decoder error expected: nil, actual: %+v", err)
+	}
+
+	if actual := strings.TrimSpace(string(buf.Bytes())); expected != actual {
+		t.Errorf("json.Marshal expected: '%+v', actual: '%+v'", expected, actual)
+	}
+}
+
+func TestNewJSONEncoderSetEscapeHTMLOn(t *testing.T) {
+	type Obj struct {
+		Foo string `json:"foo" api:"1.1,str"`
+		A   *int   `json:"a" api:"1.4,str"`
+	}
+
+	json := NewJSON(1.3)
+
+	obj := Obj{Foo: "&"}
+	expected := `{"foo":"\u0026"}`
+
+	buf := bytes.Buffer{}
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(true)
+	if err := enc.Encode(&obj); err != nil {
+		t.Fatalf("json.Decoder error expected: nil, actual: %+v", err)
+	}
+
+	if actual := strings.TrimSpace(string(buf.Bytes())); expected != actual {
+		t.Errorf("json.Marshal expected: '%+v', actual: '%+v'", expected, actual)
+	}
+}
+
+func TestNewJSONEncoderSetEscapeHTMLOff(t *testing.T) {
+	type Obj struct {
+		Foo string `json:"foo" api:"1.1,str"`
+		A   *int   `json:"a" api:"1.4,str"`
+	}
+
+	json := NewJSON(1.3)
+
+	obj := Obj{Foo: "&"}
+	expected := `{"foo":"&"}`
+
+	buf := bytes.Buffer{}
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(&obj); err != nil {
+		t.Fatalf("json.Decoder error expected: nil, actual: %+v", err)
+	}
+
+	if actual := strings.TrimSpace(string(buf.Bytes())); expected != actual {
+		t.Errorf("json.Marshal expected: '%+v', actual: '%+v'", expected, actual)
+	}
+}
+
+func TestNewJSONEncoderSetIndent(t *testing.T) {
+	type Obj struct {
+		Foo string `json:"foo" api:"1.1,str"`
+		A   *int   `json:"a" api:"1.4,str"`
+	}
+
+	json := NewJSON(1.3)
+
+	obj := Obj{Foo: "bar"}
+	expected := `{
+	  "foo": "bar"
+	}`
+
+	buf := bytes.Buffer{}
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("\t", "  ")
+	if err := enc.Encode(&obj); err != nil {
+		t.Fatalf("json.Decoder error expected: nil, actual: %+v", err)
+	}
+
+	if actual := strings.TrimSpace(string(buf.Bytes())); expected != actual {
+		t.Errorf("json.Marshal expected: '%+v', actual: '%+v'", expected, actual)
 	}
 }

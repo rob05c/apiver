@@ -5,7 +5,7 @@ This package lets you use Semantic Versioning (https://semver.org/), specificall
 
 To use it, add struct tags for the minor version each field was added in, then call `UnmarshalJSON(bytes, object, version)` or `MarshalJSON(obj, version)` with the current version. For example, if an HTTP client requests `https://example.com/api/1.1/foo`, you would load the `Foo` object, then call `MarshalJSON(foo, 1.1)`.
 
-The `encoding/json` functions `Marshal`, `MarshalIndent`, `Unmarshal`, and `NewDecoder` are also implemented as object methods, to make it easier to use this package as a drop-in replacement for `encoding/json`. For example:
+The `encoding/json` functions `Marshal`, `MarshalIndent`, `Unmarshal`, `NewDecoder`, and `NewEncoder` are also implemented as object methods, to make it easier to use this package as a drop-in replacement for `encoding/json`. For example:
 
 ```go
 json := apiver.NewJSON(1.1)
